@@ -1,0 +1,35 @@
+{
+  "url": "https://prokoleso.ua",
+  "timeout": 30000,
+  "retries": 3,
+  "interval": 300000,
+  "alertThresholds": {
+    "loadTime": 10000,
+    "responseTime": 5000,
+    "errorRate": 0.1
+  },
+  "notifications": {
+    "email": {
+      "enabled": false,
+      "smtp": {
+        "host": "",
+        "port": 587,
+        "secure": false,
+        "auth": {
+          "user": "",
+          "pass": ""
+        }
+      },
+      "to": ""
+    },
+    "slack": {
+      "enabled": false,
+      "webhook": ""
+    },
+    "telegram": {
+      "enabled": false,
+      "botToken": "",
+      "chatId": ""
+    }
+  }
+}

@@ -1,0 +1,106 @@
+name: Prokoleso Continuous Monitoring
+
+on:
+  # Запуск каждые 15 минут
+  schedule:
+    - cron: '*/15 * * * *'
+  
+  # Ручной запуск
+  workflow_dispatch:
+    inputs:
+      duration:
+        description: 'Длительность мониторинга (минуты)'
+        required: true
+        default: '60'
+        type: string
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+      
+      - name: Run monitoring
+        run: |
+          # Создаем папку для отчетов
+          mkdir -p reports
+          
+          # Запускаем мониторинг
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            DURATION=${{ github.event.inputs.duration }}
+            echo "Запуск мониторинга на $DURATION минут"
+            timeout ${DURATION}m npm run monitor:continuous || true
+          else
+            echo "Запуск мониторинга на 15 минут"
+            timeout 15m npm run monitor:continuous || true
+          fi
+      
+      - name: Upload monitoring results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: monitoring-results-${{ github.run_number }}
+          path: |
+            reports/monitor-report.json
+            reports/alerts.log
+          retention-days: 7
+      
+      - name: Analyze results
+        if: always()
+        run: |
+          if [ -f "reports/monitor-report.json" ]; then
+            echo "## Monitoring Analysis" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            
+            # Анализируем результаты
+            node -e "
+              const fs = require('fs');
+              const report = JSON.parse(fs.readFileSync('reports/monitor-report.json', 'utf8'));
+              
+              const total = report.length;
+              const successful = report.filter(r => r.success).length;
+              const failed = total - successful;
+              const successRate = (successful / total * 100).toFixed(1);
+              
+              const avgLoadTime = report
+                .filter(r => r.success && r.metrics)
+                .reduce((sum, r) => sum + r.metrics.loadComplete, 0) / successful || 0;
+              
+              console.log('### Summary');
+              console.log('- Total checks: ' + total);
+              console.log('- Successful: ' + successful);
+              console.log('- Failed: ' + failed);
+              console.log('- Success rate: ' + successRate + '%');
+              console.log('- Average load time: ' + Math.round(avgLoadTime) + 'ms');
+              
+              if (failed > 0) {
+                console.log('');
+                console.log('### Failed Checks');
+                report.filter(r => !r.success).forEach((r, i) => {
+                  console.log((i + 1) + '. ' + new Date(r.timestamp).toLocaleString() + ' - ' + r.error);
+                });
+              }
+            " >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No monitoring data found" >> $GITHUB_STEP_SUMMARY
+          fi
+      
+      - name: Send alert on failure
+        if: failure()
+        run: |
+          echo "🚨 Monitoring failed - check the logs for details"
+          # Здесь можно добавить отправку алертов в Slack, Email, Telegram и т.д.
