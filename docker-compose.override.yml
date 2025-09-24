@@ -1,0 +1,15 @@
+# Переопределения для разработки
+version: '3.8'
+
+services:
+  playwright-tests:
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    command: npm run test:ui
+    ports:
+      - "9323:9323"
+    stdin_open: true
+    tty: true

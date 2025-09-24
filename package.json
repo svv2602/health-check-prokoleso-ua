@@ -30,7 +30,14 @@
     "setup:optimized": "npm install && playwright install && npm run test:fast",
     "clean": "rm -rf reports/ test-results/ logs/",
     "lint": "eslint tests/ scripts/",
-    "lint:fix": "eslint tests/ scripts/ --fix"
+    "lint:fix": "eslint tests/ scripts/ --fix",
+    "docker:build": "./scripts/docker-build.sh",
+    "docker:run": "./scripts/docker-run.sh",
+    "docker:fast": "./scripts/docker-run.sh fast",
+    "docker:full": "./scripts/docker-run.sh full",
+    "docker:monitor": "./scripts/docker-run.sh monitor",
+    "docker:dev": "./scripts/docker-run.sh dev",
+    "docker:clean": "./scripts/docker-run.sh clean"
   },
   "keywords": [
     "playwright",

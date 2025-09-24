@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  # Основной сервис тестирования
+  playwright-tests:
+    build: .
+    container_name: prokoleso-playwright
+    volumes:
+      - ./reports:/app/reports
+      - ./test-results:/app/test-results
+      - ./config:/app/config
+    environment:
+      - NODE_ENV=production
+      - PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+    command: npm run test:fast
+    restart: "no"
+
+  # Сервис для полного тестирования
+  playwright-full:
+    build: .
+    container_name: prokoleso-playwright-full
+    volumes:
+      - ./reports:/app/reports
+      - ./test-results:/app/test-results
+      - ./config:/app/config
+    environment:
+      - NODE_ENV=production
+      - PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+    command: npm run test:all
+    restart: "no"
+    profiles:
+      - full
+
+  # Сервис для мониторинга
+  playwright-monitor:
+    build: .
+    container_name: prokoleso-monitor
+    volumes:
+      - ./reports:/app/reports
+      - ./config:/app/config
+    environment:
+      - NODE_ENV=production
+      - PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+    command: npm run monitor:continuous
+    restart: unless-stopped
+    profiles:
+      - monitor
+
+  # Сервис для разработки
+  playwright-dev:
+    build: .
+    container_name: prokoleso-playwright-dev
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+    command: npm run test:ui
+    ports:
+      - "9323:9323"
+    restart: "no"
+    profiles:
+      - dev

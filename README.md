@@ -22,19 +22,21 @@
 
 ## 🛠️ Установка
 
-### Быстрая установка
+### 🐳 Docker (Рекомендуется)
 
 ```bash
 # Клонирование репозитория
 git clone <repository-url>
 cd Playwright_for_prokoleso
 
-# Автоматическая установка
-chmod +x scripts/setup.sh
-./scripts/setup.sh
+# Сборка Docker образа
+npm run docker:build
+
+# Запуск быстрых тестов
+npm run docker:fast
 ```
 
-### Ручная установка
+### 📦 Локальная установка
 
 ```bash
 # Установка зависимостей
@@ -87,6 +89,14 @@ npm run telegram:test
 
 # Тесты формы заказа
 npm run test:checkout
+
+# Docker команды
+npm run docker:build    # Сборка образа
+npm run docker:fast     # Быстрые тесты в Docker
+npm run docker:full     # Полные тесты в Docker
+npm run docker:monitor  # Мониторинг в Docker
+npm run docker:dev      # Режим разработки
+npm run docker:clean    # Очистка Docker
 ```
 
 ### Мониторинг
