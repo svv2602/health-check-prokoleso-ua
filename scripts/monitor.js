@@ -8,9 +8,10 @@
 const { chromium } = require('playwright');
 const fs = require('fs');
 const path = require('path');
+const TelegramNotifier = require('./telegram-notifier');
 
-// Конфигурация
-const CONFIG = {
+// Загрузка конфигурации
+let CONFIG = {
   url: 'https://prokoleso.ua',
   timeout: 30000,
   retries: 3,
@@ -22,6 +23,23 @@ const CONFIG = {
     errorRate: 0.1 // 10%
   }
 };
+
+// Загружаем конфигурацию из файла если существует
+const configPath = path.join(__dirname, '..', 'config', 'monitor.json');
+if (fs.existsSync(configPath)) {
+  try {
+    const fileConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    CONFIG = { ...CONFIG, ...fileConfig };
+  } catch (err) {
+    log('⚠️ Ошибка чтения конфигурации, используются значения по умолчанию', 'yellow');
+  }
+}
+
+// Инициализация Telegram уведомлений
+let telegramNotifier = null;
+if (CONFIG.notifications?.telegram?.enabled) {
+  telegramNotifier = new TelegramNotifier(CONFIG.notifications.telegram);
+}
 
 // Цвета для консоли
 const colors = {
@@ -113,10 +131,34 @@ async function checkWebsite() {
       log(`⚠️ Ошибок в консоли: ${consoleErrors.length}`, 'yellow');
       consoleErrors.forEach(error => log(`   - ${error}`, 'yellow'));
     }
+
+    // Проверка на медленную производительность
+    if (telegramNotifier && CONFIG.notifications.telegram.notifyOnSlowPerformance) {
+      if (metrics.loadComplete > CONFIG.alertThresholds.loadTime) {
+        log('🐌 Медленная загрузка - отправка уведомления', 'yellow');
+        await telegramNotifier.sendSlowPerformance({
+          url: CONFIG.url,
+          loadTime: metrics.loadComplete,
+          threshold: CONFIG.alertThresholds.loadTime,
+          timestamp: new Date().toISOString()
+        });
+      }
+    }
     
   } catch (err) {
     error = err.message;
     log(`❌ Ошибка: ${error}`, 'red');
+    
+    // Отправка уведомления о недоступности сайта
+    if (telegramNotifier && CONFIG.notifications.telegram.notifyOnSiteDown) {
+      log('🔴 Сайт недоступен - отправка уведомления', 'red');
+      await telegramNotifier.sendSiteDown({
+        url: CONFIG.url,
+        error: error,
+        responseTime: totalTime,
+        timestamp: new Date().toISOString()
+      });
+    }
   } finally {
     await browser.close();
   }

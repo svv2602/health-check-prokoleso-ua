@@ -27,9 +27,18 @@
       "webhook": ""
     },
     "telegram": {
-      "enabled": false,
-      "botToken": "",
-      "chatId": ""
+      "enabled": true,
+      "botToken": "5938187075:AAGluQo61DCp6CwR2QCS0s9P2-jZQBoCGXw",
+      "chatId": "377402110",
+      "adminChatId": "",
+      "notifyOnErrors": true,
+      "notifyOnSiteDown": true,
+      "notifyOnSlowPerformance": true,
+      "notifyOnTestFailures": true,
+      "notifyOnReports": false,
+      "maxMessageLength": 4096,
+      "retryAttempts": 3,
+      "retryDelay": 1000
     }
   }
 }

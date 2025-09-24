@@ -24,7 +24,9 @@ export default defineConfig({
   reporter: [
     ['html', { outputFolder: 'reports/playwright-report' }],
     ['json', { outputFile: 'reports/test-results.json' }],
-    ['list'] // Консольный вывод
+    ['list'], // Консольный вывод
+    // Кастомный репортер для Telegram уведомлений
+    ['./scripts/playwright-telegram-reporter.js']
   ],
   
   // Глобальные настройки для всех тестов (оптимизированы)
