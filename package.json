@@ -11,6 +11,8 @@
     "test:checkout": "playwright test tests/prokoleso-checkout-form.spec.ts --config=playwright.config.optimized.ts",
     "test:checkout:detailed": "playwright test tests/prokoleso-checkout-detailed.spec.ts --config=playwright.config.optimized.ts",
     "test:checkout:adaptive": "playwright test tests/prokoleso-checkout-adaptive.spec.ts --config=playwright.config.optimized.ts",
+    "test:checkout:with-cart": "playwright test tests/prokoleso-checkout-with-cart.spec.ts --config=playwright.config.optimized.ts",
+    "test:checkout:simulation": "playwright test tests/prokoleso-checkout-simulation.spec.ts --config=playwright.config.optimized.ts",
     "test:all": "playwright test --config=playwright.config.optimized.ts",
     "test:ui": "playwright test --ui --config=playwright.config.optimized.ts",
     "test:headed": "playwright test --headed --config=playwright.config.optimized.ts",
